@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import apiRequest from './api';
+import { useAuth } from './useAuth';
 import './books.css'
 
 const BookList = () => {
+  const { user } = useAuth();
   const [books, setBooks] = useState([]);
+  const [error, setError] = useState('');
   const [bookType, setBookType] = useState('');
   const [bookAuthor, setBookAuthor] = useState('');
   const [typeInput, setTypeInput] = useState('');
@@ -11,13 +15,13 @@ const BookList = () => {
 
   useEffect(() => {
     const fetchBooks = async () => {
-      const url = `${import.meta.env.VITE_API_URL}/api/books?type=${bookType}&author=${bookAuthor}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const params = new URLSearchParams({ type: bookType, author: bookAuthor });
+      try {
+        setBooks(await apiRequest(`/api/books?${params}`));
+        setError('');
+      } catch (requestError) {
+        setError(requestError.message);
       }
-      const data = await response.json();
-      setBooks(data);
     };
     fetchBooks();
   }, [bookType, bookAuthor]);
@@ -31,6 +35,7 @@ const BookList = () => {
       <input type="text" placeholder="Author..." value={authorInput} onChange={(e) => setAuthorInput(e.target.value)} />
       <button type="button" onClick={() => { setBookType(typeInput); setBookAuthor(authorInput); }}>Search</button>
       <button type="button" onClick={() => { setBookType(''); setBookAuthor(''); setTypeInput(''); setAuthorInput(''); }}>Clear</button>
+      {error && <p role="alert">Could not load books: {error}</p>}
       {books.map(book => (
         <article className='book-article' key={book.id}>
           <p>Title: {book.title}</p>
@@ -40,7 +45,7 @@ const BookList = () => {
         </article>
       ))}
       {(!books || books.length === 0) && <p>No books found.</p>}
-      <Link to="/books/new">Add New Book</Link>
+      {user ? <Link to="/books/new">Add New Book</Link> : <p>Log in to add a book.</p>}
     </div>
   );
 };

@@ -18,4 +18,10 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    files: ['express-server-demo/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

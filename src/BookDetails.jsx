@@ -1,34 +1,37 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import apiRequest from './api';
+import { useAuth } from './useAuth';
 import './books.css';
 function BookDetails() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [error, setError] = useState('');
   const handleDelete = async (id) => {
-    const url = `${import.meta.env.VITE_API_URL}/api/books/${id}`;
-    const response = await fetch(url, { method: 'DELETE' });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+      await apiRequest(`/api/books/${id}`, { method: 'DELETE' });
+      navigate('/books');
+    } catch (requestError) {
+      setError(requestError.message);
     }
-    navigate('/books');
   };
   const { id } = useParams();
   const [book, setBook] = useState(null);
 
   useEffect(() => {
     const fetchBook = async () => {
-      const url = `${import.meta.env.VITE_API_URL}/api/books/${id}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      try {
+        setBook(await apiRequest(`/api/books/${id}`));
+        setError('');
+      } catch (requestError) {
+        setError(requestError.message);
       }
-      const data = await response.json();
-      setBook(data);
     };
     fetchBook();
   }, [id]);
 
   if (!book) {
-    return <p>Loading...</p>;
+    return <p>{error ? `Could not load book: ${error}` : 'Loading...'}</p>;
   }
 
   return (
@@ -38,7 +41,8 @@ function BookDetails() {
         <p>Author: {book.author}</p>
         <p>Type: {book.type}</p>
         <p>Is Read: {book.isRead ? 'Yes' : 'No'}</p>
-        <button onClick={() => handleDelete(book.id)}>Delete Book</button>
+        {user && <button onClick={() => handleDelete(book.id)}>Delete Book</button>}
+        {error && <p role="alert">Could not delete book: {error}</p>}
       </div>
       <Link to="/books">Back to Book List</Link>
     </>

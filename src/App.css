@@ -182,3 +182,30 @@
     border-right-color: var(--border);
   }
 }
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.app-brand {
+  color: var(--text-h);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-header button {
+  font: inherit;
+  cursor: pointer;
+}
